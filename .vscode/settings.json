@@ -1,0 +1,41 @@
+{
+  // Formatea con Prettier cada vez que guardas
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+
+  // Deja que ESLint corrija lo que pueda al guardar (imports, reglas, etc.)
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // Errores y avisos en línea, junto al código (muy útil mientras aprendes)
+  "errorLens.enabledDiagnosticLevels": ["error", "warning", "info"],
+
+  // --- TypeScript ---
+  // Usa la versión de TS del proyecto, no la del editor
+  "typescript.tsdk": "node_modules/typescript/lib",
+  // Imports automáticos como rutas relativas/alias del proyecto
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // --- Tailwind CSS v4 ---
+  // Autocompletado de clases también dentro de cn()/clsx() y en strings
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+
+  // --- Calidad de vida ---
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/pnpm-lock.yaml": true
+  }
+}

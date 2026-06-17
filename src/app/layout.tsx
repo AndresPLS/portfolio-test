@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+
+import { SmoothScrollProvider } from "@/components/motion/smooth-scroll-provider";
 import "./globals.css";
 
 /**
@@ -36,7 +38,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body className="min-h-dvh font-sans antialiased">{children}</body>
+      <body className="min-h-dvh font-sans antialiased">
+        <SmoothScrollProvider>{children}</SmoothScrollProvider>
+      </body>
     </html>
   );
 }
