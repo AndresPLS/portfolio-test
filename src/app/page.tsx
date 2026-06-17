@@ -1,33 +1,27 @@
-export default function Home() {
+import { CoverScrubber } from "@/components/home/cover-scrubber";
+import { SiteFooter } from "@/components/site/site-footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { getAllProjects } from "@/content/projects";
+
+export default async function Home() {
+  // Server Component: leemos el contenido en el servidor y pasamos a la isla
+  // cliente solo lo necesario (slug, título y portada con sus dimensiones).
+  const projects = await getAllProjects();
+  const covers = projects.map((project) => ({
+    slug: project.slug,
+    title: project.title,
+    src: project.cover.src,
+    width: project.cover.width,
+    height: project.cover.height,
+  }));
+
   return (
-    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col justify-between px-6 py-12 md:px-10">
-      <header className="flex items-center justify-between text-sm tracking-widest uppercase">
-        <span className="font-display font-medium">Estudio</span>
-        <nav className="text-ink/50 flex gap-6">
-          <span>Architecture</span>
-          <span>Product</span>
-          <span>About</span>
-        </nav>
-      </header>
-
-      <section className="max-w-3xl py-24">
-        <h1 className="font-display text-5xl leading-[1.05] tracking-tight md:text-7xl">
-          Diseño editorial,
-          <br />
-          imagen y espacio.
-        </h1>
-        <p className="text-ink/70 mt-8 max-w-md text-lg leading-relaxed">
-          Base del proyecto lista: Next.js 16, React 19, Tailwind v4 y
-          tipografías cargadas con{" "}
-          <code className="font-display">next/font</code>. Sobre esto
-          construiremos la home animada en las siguientes fases.
-        </p>
-      </section>
-
-      <footer className="border-ink/10 text-ink/50 flex items-center justify-between border-t pt-6 text-sm">
-        <span>Fase 0 — Scaffolding</span>
-        <span>© 2026</span>
-      </footer>
-    </main>
+    <div className="flex min-h-dvh flex-col">
+      <SiteHeader />
+      <main className="flex flex-1 items-center justify-center px-6">
+        <CoverScrubber covers={covers} />
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

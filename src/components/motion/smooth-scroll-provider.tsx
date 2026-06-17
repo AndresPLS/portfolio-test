@@ -7,14 +7,22 @@ import { gsap, ScrollTrigger } from "@/components/motion/gsap";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 /**
+ * Holder a nivel de módulo con la instancia de Lenis. Lo exponemos con `getLenis()`
+ * para que otros componentes hagan scroll programático coherente con el scroll
+ * suave (p. ej. saltar a una foto desde Thumbnails) sin necesitar Context ni estado.
+ * Es `null` si el scroll suave está desactivado (reduced-motion).
+ */
+let lenisInstance: Lenis | null = null;
+
+export function getLenis(): Lenis | null {
+  return lenisInstance;
+}
+
+/**
  * Scroll suave global (Lenis) sincronizado con GSAP / ScrollTrigger.
- *
- * - Si el usuario pide reducir movimiento → NO activamos Lenis (scroll nativo).
- * - Un único bucle de animación: el ticker de GSAP "conduce" el rAF de Lenis,
- *   así el scroll y las animaciones quedan perfectamente sincronizados.
- * - El cleanup destruye Lenis y quita el ticker; por eso es seguro con React
- *   StrictMode, que en desarrollo monta → desmonta → vuelve a montar para
- *   detectar fugas de recursos.
+ * - Desactivado con reduced-motion (scroll nativo).
+ * - El ticker de GSAP conduce el rAF de Lenis (un único bucle, sincronía total).
+ * - El cleanup destruye Lenis → seguro con StrictMode.
  */
 export function SmoothScrollProvider({
   children,
@@ -26,19 +34,18 @@ export function SmoothScrollProvider({
   useEffect(() => {
     if (reduced) return;
 
-    const lenis = new Lenis();
+    const instance = new Lenis();
+    instance.on("scroll", ScrollTrigger.update);
 
-    // En cada scroll de Lenis, recalculamos los disparadores de ScrollTrigger.
-    lenis.on("scroll", ScrollTrigger.update);
-
-    // El ticker de GSAP entrega el tiempo en segundos; Lenis lo quiere en ms.
-    const onTick = (time: number) => lenis.raf(time * 1000);
+    const onTick = (time: number) => instance.raf(time * 1000);
     gsap.ticker.add(onTick);
     gsap.ticker.lagSmoothing(0);
+    lenisInstance = instance;
 
     return () => {
       gsap.ticker.remove(onTick);
-      lenis.destroy();
+      instance.destroy();
+      lenisInstance = null;
     };
   }, [reduced]);
 
