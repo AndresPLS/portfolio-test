@@ -1,0 +1,7 @@
+# pnpm 10+ bloquea por seguridad los scripts de build (postinstall) por defecto.
+# Aquí aprobamos explícitamente los que sí queremos:
+# - sharp: binario nativo para la optimización de imágenes de next/image.
+# - unrs-resolver: resolver nativo (Rust) que usa eslint-config-next.
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
