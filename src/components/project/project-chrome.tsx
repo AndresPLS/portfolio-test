@@ -74,7 +74,7 @@ export function ProjectChrome({
 
   return (
     <>
-      <header className="bg-bone/80 fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-6 text-sm backdrop-blur md:px-10">
+      <header className="bg-bone/80 fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-4 text-sm backdrop-blur md:px-6">
         <button
           type="button"
           onClick={() => setGridOpen(true)}
