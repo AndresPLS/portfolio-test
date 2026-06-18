@@ -13,6 +13,7 @@ export default async function Home() {
     src: project.cover.src,
     width: project.cover.width,
     height: project.cover.height,
+    vh: project.coverHeightVh,
   }));
 
   return (

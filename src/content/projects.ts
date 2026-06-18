@@ -23,6 +23,19 @@ const CONTENT_DIR = path.join(process.cwd(), "content/projects");
 const PUBLIC_PROJECTS = path.join(process.cwd(), "public/projects");
 const IMAGE_RE = /\.(jpe?g|png|webp|avif)$/i;
 
+/** Alto de portada en la home: variado pero determinista por slug (45–70vh). */
+function hashString(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 31 + value.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+function deterministicCoverVh(slug: string): number {
+  // 45, 45.5, … 70 (51 valores), siempre el mismo para cada slug.
+  return 45 + (hashString(slug) % 51) * 0.5;
+}
+
 const imageSizeSchema = z.enum(["sm", "md", "lg", "full"]);
 
 // Cada entrada de `layout`: una imagen (con talla) o una pareja en fila.
@@ -44,6 +57,9 @@ const projectFrontmatterSchema = z.object({
   summary: z.string().optional(),
   credit: z.string().optional(),
   featured: z.boolean().default(false),
+  /** Alto manual de la portada en la home (en vh). Si se omite, se calcula de
+   *  forma determinista entre 70 y 75vh a partir del slug. */
+  homeCoverHeight: z.number().optional(),
   layout: z.array(layoutItemSchema).optional(),
   seo: z
     .object({
@@ -69,6 +85,7 @@ export type Project = z.infer<typeof projectFrontmatterSchema> & {
   slug: string;
   body: string;
   cover: ProjectImage; // para la home
+  coverHeightVh: number; // alto de la portada en la home (vh)
   blocks: Block[]; // secuencia del detalle (con tallas)
 };
 
@@ -153,7 +170,8 @@ async function loadProject(fileName: string): Promise<Project> {
     }));
   }
 
-  return { ...fm, slug, body: content.trim(), cover, blocks };
+  const coverHeightVh = fm.homeCoverHeight ?? deterministicCoverVh(slug);
+  return { ...fm, slug, body: content.trim(), cover, coverHeightVh, blocks };
 }
 
 async function loadProjects(): Promise<Project[]> {
