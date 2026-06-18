@@ -24,10 +24,12 @@ export function ProjectChrome({
   title,
   blockCount,
   thumbs,
+  nextHref,
 }: {
   title: string;
   blockCount: number;
   thumbs: Thumb[];
+  nextHref: string;
 }) {
   const [current, setCurrent] = useState(0);
   const [gridOpen, setGridOpen] = useState(false);
@@ -74,41 +76,86 @@ export function ProjectChrome({
 
   return (
     <>
-      <header className="bg-bone/80 fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-4 text-sm backdrop-blur md:px-6">
-        <button
-          type="button"
-          onClick={() => setGridOpen(true)}
-          className="cursor-pointer transition-opacity hover:opacity-60"
-        >
-          Thumbnails
-        </button>
-        <h1 className="font-display absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
-          {title}
-        </h1>
-        <Link
-          href="/"
-          aria-label="Cerrar"
-          className="text-lg transition-opacity hover:opacity-60"
-        >
-          ✕
-        </Link>
+      <header className="fixed inset-x-0 top-0 z-30 px-4 py-4 text-sm md:px-6">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[200%] [mask-image:linear-gradient(to_bottom,black,black_45%,transparent)] backdrop-blur-md [-webkit-mask-image:linear-gradient(to_bottom,black,black_45%,transparent)]"
+        />
+        <div className="relative flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setGridOpen(true)}
+            aria-label="Ver todas las fotos"
+            className="cursor-pointer transition-opacity hover:opacity-60"
+          >
+            <svg
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+              className="size-5"
+            >
+              <circle cx="6.5" cy="6.5" r="1.75" />
+              <circle cx="13.5" cy="6.5" r="1.75" />
+              <circle cx="6.5" cy="13.5" r="1.75" />
+              <circle cx="13.5" cy="13.5" r="1.75" />
+            </svg>
+          </button>
+          <h1 className="font-display absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+            {title}
+          </h1>
+          <Link
+            href="/"
+            aria-label="Cerrar"
+            className="transition-opacity hover:opacity-60"
+          >
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+              className="size-5"
+            >
+              <path d="M4 4l12 12M16 4L4 16" />
+            </svg>
+          </Link>
+        </div>
       </header>
 
-      <p className="text-ink/60 fixed inset-x-0 bottom-6 z-30 text-center text-sm">
-        {current + 1} / {blockCount}
-      </p>
+      <div className="fixed inset-x-0 bottom-6 z-30 flex items-center justify-center gap-6 text-sm">
+        <span className="text-ink/60">
+          {current + 1} / {blockCount}
+        </span>
+        {current === blockCount - 1 ? (
+          <Link
+            href={nextHref}
+            className="text-ink/70 transition-opacity hover:opacity-60"
+          >
+            Next
+          </Link>
+        ) : null}
+      </div>
 
       {gridOpen ? (
-        <div className="bg-bone fixed inset-0 z-40 overflow-y-auto px-6 pt-24 pb-16 md:px-10">
-          <header className="bg-bone/80 fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-6 text-sm backdrop-blur md:px-10">
+        <div className="bg-bone fixed inset-0 z-40 overflow-y-auto px-4 pt-24 pb-16 md:px-6">
+          <header className="bg-bone/80 fixed inset-x-0 top-0 z-50 flex items-center justify-between px-4 py-4 text-sm backdrop-blur md:px-6">
             <span className="font-display">{title} · Thumbnails</span>
             <button
               type="button"
               onClick={() => setGridOpen(false)}
               aria-label="Cerrar"
-              className="text-lg transition-opacity hover:opacity-60"
+              className="transition-opacity hover:opacity-60"
             >
-              ✕
+              <svg
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                aria-hidden="true"
+                className="size-5"
+              >
+                <path d="M4 4l12 12M16 4L4 16" />
+              </svg>
             </button>
           </header>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">

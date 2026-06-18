@@ -3,8 +3,7 @@
  */
 export function SiteFooter() {
   return (
-    <footer className="text-ink/70 flex items-center justify-end gap-10 px-6 py-4 text-sm md:px-6">
-      <span>Contact</span>
+    <footer className="text-ink/70 flex items-center justify-end gap-4 px-4 py-4 text-sm md:px-6">
       <span>Legal</span>
       <span>© 2026</span>
     </footer>

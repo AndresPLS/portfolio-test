@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 type Cover = {
   slug: string;
@@ -16,23 +16,25 @@ type Cover = {
 const DRAG_THRESHOLD = 8; // px para distinguir arrastre de tap
 
 /**
- * Hero de la home: una portada centrada que CAMBIA según la posición horizontal,
- * sin transición. Clic/tap → ficha del proyecto activo.
- * - Escritorio (ratón): la posición del cursor manda (sin arrastrar).
- * - Móvil/táctil: arrastrar el dedo cambia de imagen; un tap abre el proyecto.
+ * Hero de la home: una portada centrada que CAMBIA de imagen, sin transición.
+ * Clic/tap → ficha del proyecto activo.
+ * - Escritorio (ratón): la posición HORIZONTAL del cursor manda (segmentos verticales).
+ * - Móvil/táctil: arrastrar el dedo en VERTICAL cambia de imagen (segmentos
+ *   horizontales: se divide el alto, que en móvil da más recorrido). Un tap abre.
  */
 export function CoverScrubber({ covers }: { covers: Cover[] }) {
   const [index, setIndex] = useState(0);
-  const startXRef = useRef(0);
+  const startYRef = useRef(0);
   const draggedRef = useRef(false);
 
-  const pickByX = (clientX: number) => {
-    const ratio = clientX / window.innerWidth;
-    const next = Math.floor(ratio * covers.length);
-    setIndex(Math.min(covers.length - 1, Math.max(0, next)));
-  };
+  const clamp = (n: number) => Math.min(covers.length - 1, Math.max(0, n));
 
-  // Escritorio: la posición del cursor mapea al índice (sin necesidad de arrastrar).
+  const pickByX = (clientX: number) =>
+    setIndex(clamp(Math.floor((clientX / window.innerWidth) * covers.length)));
+  const pickByY = (clientY: number) =>
+    setIndex(clamp(Math.floor((clientY / window.innerHeight) * covers.length)));
+
+  // Escritorio: la posición horizontal del cursor mapea al índice.
   useEffect(() => {
     if (!window.matchMedia("(pointer: fine)").matches) return;
     const onMove = (event: PointerEvent) => pickByX(event.clientX);
@@ -41,17 +43,17 @@ export function CoverScrubber({ covers }: { covers: Cover[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [covers.length]);
 
-  // Táctil: el dedo solo emite pointermove mientras arrastra → mapeamos la X.
+  // Táctil: arrastre vertical → índice (el dedo solo emite pointermove al arrastrar).
   const onPointerDown = (event: React.PointerEvent) => {
-    startXRef.current = event.clientX;
+    startYRef.current = event.clientY;
     draggedRef.current = false;
   };
   const onPointerMove = (event: React.PointerEvent) => {
     if (event.pointerType === "mouse") return; // el escritorio ya lo gestiona
-    if (Math.abs(event.clientX - startXRef.current) > DRAG_THRESHOLD) {
+    if (Math.abs(event.clientY - startYRef.current) > DRAG_THRESHOLD) {
       draggedRef.current = true;
     }
-    pickByX(event.clientX);
+    pickByY(event.clientY);
   };
   // Si fue un arrastre, no navegamos (solo se cambia la imagen).
   const onClick = (event: React.MouseEvent) => {
@@ -67,7 +69,7 @@ export function CoverScrubber({ covers }: { covers: Cover[] }) {
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onClick={onClick}
-      className="flex flex-1 touch-none items-center justify-center px-6"
+      className="flex flex-1 touch-none items-center justify-center px-4 md:px-6"
     >
       {covers.map((cover, i) => (
         <Image
@@ -78,8 +80,8 @@ export function CoverScrubber({ covers }: { covers: Cover[] }) {
           height={cover.height}
           loading="eager"
           sizes="(max-width: 768px) 85vw, 45vw"
-          style={{ height: `${cover.vh}vh`, width: "auto" }}
-          className={`max-w-[90vw] ${i === index ? "block" : "hidden"}`}
+          style={{ ["--cover-mh"]: `${cover.vh}vh` } as CSSProperties}
+          className={`h-auto w-full object-contain md:max-h-[var(--cover-mh)] md:w-auto md:max-w-full ${i === index ? "block" : "hidden"}`}
         />
       ))}
     </Link>

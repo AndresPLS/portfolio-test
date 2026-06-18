@@ -7,7 +7,7 @@ import Link from "next/link";
  */
 export function SiteHeader() {
   return (
-    <header className="flex items-center justify-between px-6 py-4 text-sm md:px-6">
+    <header className="flex items-center justify-between px-4 py-4 text-sm md:px-6">
       <Link href="/" className="font-display text-base italic">
         Andrés Polo
       </Link>

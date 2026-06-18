@@ -53,7 +53,7 @@ const layoutItemSchema = z.union([
 const projectFrontmatterSchema = z.object({
   title: z.string(),
   year: z.number().int().optional(),
-  location: z.string().optional(),
+  subtitleText: z.string().optional(),
   summary: z.string().optional(),
   credit: z.string().optional(),
   featured: z.boolean().default(false),

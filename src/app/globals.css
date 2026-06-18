@@ -9,7 +9,7 @@
 @theme {
   /* Paleta editorial monocroma (del análisis de Mayice). */
   --color-bone: #f5f5f5; /* fondo hueso principal */
-  --color-ink: #000000; /* texto y elementos */
+  --color-ink: #111111; /* texto y elementos */
   --color-paper: #ffffff; /* secciones / inversos */
 }
 

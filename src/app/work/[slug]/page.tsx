@@ -8,7 +8,11 @@ import {
   rowImageClass,
 } from "@/components/project/image-sizes";
 import { ProjectChrome } from "@/components/project/project-chrome";
-import { getAllProjectSlugs, getProjectBySlug } from "@/content/projects";
+import {
+  getAllProjects,
+  getAllProjectSlugs,
+  getProjectBySlug,
+} from "@/content/projects";
 
 export async function generateStaticParams() {
   return (await getAllProjectSlugs()).map((slug) => ({ slug }));
@@ -34,12 +38,15 @@ export default async function ProjectPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const projects = await getAllProjects();
+  const index = projects.findIndex((p) => p.slug === slug);
+  const project = projects[index];
   if (!project) notFound();
+  const next = projects[(index + 1) % projects.length]; // vuelve al primero al final
 
   const blocks = project.blocks;
   const paragraphs = project.body.split(/\n\n+/).filter(Boolean);
-  const meta = [project.location, project.year].filter(Boolean).join(" · ");
+  const meta = [project.subtitleText, project.year].filter(Boolean).join(" · ");
 
   // Miniaturas para el panel Thumbnails: todas las imágenes, cada una sabe a qué
   // bloque (slide) pertenece para poder saltar allí.
@@ -55,6 +62,7 @@ export default async function ProjectPage({
         title={project.title}
         blockCount={blocks.length}
         thumbs={thumbs}
+        nextHref={`/work/${next.slug}`}
       />
 
       {/* Contenedor con scroll-snap. `data-lenis-prevent` hace que el scroll suave
@@ -69,7 +77,7 @@ export default async function ProjectPage({
             key={i}
             id={`shot-${i}`}
             data-shot={i}
-            className="flex min-h-dvh snap-center flex-col items-center justify-center gap-12 px-6 py-24 md:px-10"
+            className="flex min-h-dvh snap-center flex-col items-center justify-center gap-12 px-4 py-24 md:px-10"
           >
             {block.kind === "single" ? (
               <Image
@@ -105,12 +113,15 @@ export default async function ProjectPage({
             {i === 0 ? (
               <figcaption className="max-w-2xl text-center text-pretty">
                 {paragraphs.map((paragraph, j) => (
-                  <p key={j} className="text-[1.2rem] leading-[1.4]">
+                  <p
+                    key={j}
+                    className="text-[1.125rem] leading-[1.2] md:text-[1.2rem]"
+                  >
                     {paragraph}
                   </p>
                 ))}
                 {meta ? (
-                  <p className="text-ink/40 mt-2 text-sm">{meta}</p>
+                  <p className="text-ink/40 mt-4 text-sm">{meta}</p>
                 ) : null}
               </figcaption>
             ) : null}
