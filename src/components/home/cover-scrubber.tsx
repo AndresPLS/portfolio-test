@@ -53,7 +53,7 @@ export function CoverScrubber({ covers }: { covers: Cover[] }) {
     <Link
       href={`/work/${active.slug}`}
       aria-label={`Ver proyecto: ${active.title}`}
-      className="relative block"
+      className="flex flex-1 items-center justify-center px-6"
     >
       {covers.map((cover, i) => (
         <Image

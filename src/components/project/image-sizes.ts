@@ -17,3 +17,9 @@ export const imageSizeClass: Record<ImageSize, string> = {
 
 /** Cada imagen dentro de una pareja (dos en fila). */
 export const rowImageClass = "max-h-[42vh] max-w-[44vw] md:max-h-[66vh]";
+
+/**
+ * La PRIMERA imagen del detalle: tamaño fijo y consistente entre proyectos.
+ * En escritorio (md:) tope de 360px de alto.
+ */
+export const introImageClass = "h-auto w-auto max-h-[45vh] md:max-h-[360px]";

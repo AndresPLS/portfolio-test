@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import {
   imageSizeClass,
+  introImageClass,
   rowImageClass,
 } from "@/components/project/image-sizes";
 import { ProjectChrome } from "@/components/project/project-chrome";
@@ -68,7 +69,7 @@ export default async function ProjectPage({
             key={i}
             id={`shot-${i}`}
             data-shot={i}
-            className="flex min-h-dvh snap-center flex-col items-center justify-center gap-8 px-6 py-24 md:px-10"
+            className="flex min-h-dvh snap-center flex-col items-center justify-center gap-12 px-6 py-24 md:px-10"
           >
             {block.kind === "single" ? (
               <Image
@@ -78,7 +79,11 @@ export default async function ProjectPage({
                 height={block.image.height}
                 priority={i === 0}
                 sizes="(max-width: 768px) 90vw, 70vw"
-                className={`h-auto w-auto ${imageSizeClass[block.size]}`}
+                className={
+                  i === 0
+                    ? introImageClass
+                    : `h-auto w-auto ${imageSizeClass[block.size]}`
+                }
               />
             ) : (
               <div className="flex items-center justify-center gap-4 md:gap-6">
@@ -98,15 +103,12 @@ export default async function ProjectPage({
 
             {/* La primera slide lleva la intro del proyecto. */}
             {i === 0 ? (
-              <figcaption className="max-w-2xl text-center">
+              <figcaption className="max-w-2xl text-center text-pretty">
                 {paragraphs.map((paragraph, j) => (
-                  <p key={j} className="text-lg leading-relaxed">
+                  <p key={j} className="text-[1.2rem] leading-[1.4]">
                     {paragraph}
                   </p>
                 ))}
-                {project.credit ? (
-                  <p className="text-ink/50 mt-6 text-sm">{project.credit}</p>
-                ) : null}
                 {meta ? (
                   <p className="text-ink/40 mt-2 text-sm">{meta}</p>
                 ) : null}
