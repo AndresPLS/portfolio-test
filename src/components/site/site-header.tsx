@@ -12,7 +12,9 @@ export function SiteHeader() {
         Andrés Polo
       </Link>
       <nav className="flex items-center gap-8">
-        <span className="cursor-default">About</span>
+        <Link href="/about" className="transition-opacity hover:opacity-60">
+          About
+        </Link>
         <span className="flex items-center gap-2">
           <span className="font-medium italic">En</span>
           <span className="text-ink/40">Es</span>

@@ -9,8 +9,10 @@ import {
 } from "@/components/project/image-sizes";
 import { ProjectChrome } from "@/components/project/project-chrome";
 import {
+  getAllImages,
   getAllProjects,
   getAllProjectSlugs,
+  getAllTags,
   getProjectBySlug,
 } from "@/content/projects";
 
@@ -48,21 +50,19 @@ export default async function ProjectPage({
   const paragraphs = project.body.split(/\n\n+/).filter(Boolean);
   const meta = [project.subtitleText, project.year].filter(Boolean).join(" · ");
 
-  // Miniaturas para el panel Thumbnails: todas las imágenes, cada una sabe a qué
-  // bloque (slide) pertenece para poder saltar allí.
-  const thumbs = blocks.flatMap((block, i) =>
-    block.kind === "single"
-      ? [{ ...block.image, blockIndex: i }]
-      : block.images.map((image) => ({ ...image, blockIndex: i })),
-  );
+  // Datos del Archive (overlay): todos los tags + todas las imágenes del sitio.
+  const tags = await getAllTags();
+  const archiveImages = await getAllImages();
 
   return (
     <article className="h-dvh">
       <ProjectChrome
         title={project.title}
         blockCount={blocks.length}
-        thumbs={thumbs}
         nextHref={`/work/${next.slug}`}
+        projectTag={project.tag}
+        tags={tags}
+        images={archiveImages}
       />
 
       {/* Contenedor con scroll-snap. `data-lenis-prevent` hace que el scroll suave

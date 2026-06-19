@@ -4,38 +4,47 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import type { TaggedImage } from "@/content/projects";
 
-type Thumb = {
-  src: string;
-  width: number;
-  height: number;
-  alt: string;
-  blockIndex: number;
-};
+const CloseIcon = () => (
+  <svg
+    viewBox="0 0 20 20"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    aria-hidden="true"
+    className="size-5"
+  >
+    <path d="M4 4l12 12M16 4L4 16" />
+  </svg>
+);
 
 /**
- * "Chrome" de la ficha (todo lo interactivo): cabecera fija (Thumbnails · título · ✕),
- * contador `N / total` que sigue la slide visible, y el panel de miniaturas.
- * Las fotos las pinta el Server Component; aquí observamos las slides ([data-shot])
- * y navegamos entre ellas con scroll nativo (el contenedor usa scroll-snap).
+ * "Chrome" de la ficha: cabecera fija (Archive · título · ✕), contador `N/total`,
+ * y el overlay Archive (se queda DENTRO del proyecto; la ✕ del overlay solo cierra).
+ *
+ * El overlay arranca con el tag del propio proyecto (solo sus fotos) y muestra
+ * todos los tags alfabéticos; al pulsar otro, re-filtra el mosaico en cliente.
  */
 export function ProjectChrome({
   title,
   blockCount,
-  thumbs,
   nextHref,
+  projectTag,
+  tags,
+  images,
 }: {
   title: string;
   blockCount: number;
-  thumbs: Thumb[];
   nextHref: string;
+  projectTag: string;
+  tags: string[];
+  images: TaggedImage[];
 }) {
   const [current, setCurrent] = useState(0);
-  const [gridOpen, setGridOpen] = useState(false);
-  const reduced = usePrefersReducedMotion();
+  const [open, setOpen] = useState(false);
+  const [activeTag, setActiveTag] = useState(projectTag);
 
-  // Contador: la slide más visible manda.
   useEffect(() => {
     const slides = Array.from(
       document.querySelectorAll<HTMLElement>("[data-shot]"),
@@ -61,18 +70,16 @@ export function ProjectChrome({
       },
       { threshold: [0.25, 0.5, 0.75, 1] },
     );
-
     slides.forEach((slide) => observer.observe(slide));
     return () => observer.disconnect();
   }, []);
 
-  const goTo = (blockIndex: number) => {
-    setGridOpen(false);
-    document.getElementById(`shot-${blockIndex}`)?.scrollIntoView({
-      behavior: reduced ? "auto" : "smooth",
-      block: "center",
-    });
+  const openArchive = () => {
+    setActiveTag(projectTag);
+    setOpen(true);
   };
+
+  const filtered = images.filter((img) => img.tags.includes(activeTag));
 
   return (
     <>
@@ -84,8 +91,8 @@ export function ProjectChrome({
         <div className="relative flex items-center justify-between">
           <button
             type="button"
-            onClick={() => setGridOpen(true)}
-            aria-label="Ver todas las fotos"
+            onClick={openArchive}
+            aria-label="Abrir archivo"
             className="cursor-pointer transition-opacity hover:opacity-60"
           >
             <svg
@@ -108,16 +115,7 @@ export function ProjectChrome({
             aria-label="Cerrar"
             className="transition-opacity hover:opacity-60"
           >
-            <svg
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              aria-hidden="true"
-              className="size-5"
-            >
-              <path d="M4 4l12 12M16 4L4 16" />
-            </svg>
+            <CloseIcon />
           </Link>
         </div>
       </header>
@@ -136,45 +134,59 @@ export function ProjectChrome({
         ) : null}
       </div>
 
-      {gridOpen ? (
-        <div className="bg-bone fixed inset-0 z-40 overflow-y-auto px-4 pt-24 pb-16 md:px-6">
-          <header className="bg-bone/80 fixed inset-x-0 top-0 z-50 flex items-center justify-between px-4 py-4 text-sm backdrop-blur md:px-6">
-            <span className="font-display">{title} · Thumbnails</span>
+      {open ? (
+        <div
+          data-lenis-prevent
+          className="bg-bone fixed inset-0 z-40 overflow-y-auto px-4 pt-4 pb-20 md:px-6"
+        >
+          <div className="relative flex items-center justify-between text-sm">
+            <Link href="/about" className="transition-opacity hover:opacity-60">
+              About
+            </Link>
+            <span className="font-display absolute left-1/2 -translate-x-1/2">
+              Archive
+            </span>
             <button
               type="button"
-              onClick={() => setGridOpen(false)}
-              aria-label="Cerrar"
+              onClick={() => setOpen(false)}
+              aria-label="Cerrar archivo"
               className="transition-opacity hover:opacity-60"
             >
-              <svg
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                aria-hidden="true"
-                className="size-5"
-              >
-                <path d="M4 4l12 12M16 4L4 16" />
-              </svg>
+              <CloseIcon />
             </button>
-          </header>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {thumbs.map((thumb, i) => (
+          </div>
+
+          <nav className="mt-12 mb-8 flex flex-wrap gap-x-4 gap-y-2 text-[1.6rem]">
+            {tags.map((tag) => (
               <button
-                key={`${thumb.src}-${i}`}
+                key={tag}
                 type="button"
-                onClick={() => goTo(thumb.blockIndex)}
-                aria-label={`Ir a ${thumb.alt}`}
-                className="group relative block aspect-[4/5] overflow-hidden"
+                onClick={() => setActiveTag(tag)}
+                className={`transition-opacity hover:opacity-60 ${
+                  tag === activeTag ? "text-ink" : "text-ink/40"
+                }`}
+              >
+                #{tag}
+              </button>
+            ))}
+          </nav>
+
+          <div className="columns-2 gap-8 md:columns-4">
+            {filtered.map((img) => (
+              <Link
+                key={`${img.slug}-${img.src}`}
+                href={`/work/${img.slug}`}
+                className="mb-8 block break-inside-avoid"
               >
                 <Image
-                  src={thumb.src}
-                  alt={thumb.alt}
-                  fill
+                  src={img.src}
+                  alt={img.alt}
+                  width={img.width}
+                  height={img.height}
                   sizes="(max-width: 768px) 50vw, 25vw"
-                  className="object-cover transition-opacity group-hover:opacity-70"
+                  className="h-auto w-full"
                 />
-              </button>
+              </Link>
             ))}
           </div>
         </div>

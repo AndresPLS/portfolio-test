@@ -10,13 +10,9 @@ import { z } from "zod";
 import type { ImageSize } from "@/components/project/image-sizes";
 
 /**
- * Capa de contenido. El frontmatter guarda METADATOS y, opcionalmente, el `layout`
- * (orden + talla de cada foto del detalle). Las imágenes viven en
- * `public/projects/<slug>/` y de cada una leemos sus dimensiones reales con sharp.
- *
- * - Si hay `layout`: define la secuencia del detalle (con tallas y parejas).
- * - Si no: se auto-descubren todas (portada + resto, alfabético) a talla "md".
- * La PORTADA de la home siempre es el archivo `cover*` (o el primero).
+ * Capa de contenido. El frontmatter guarda METADATOS, opcionalmente el `layout`
+ * (orden + talla del detalle) y `tags` (categorías por imagen). Las fotos viven
+ * en `public/projects/<slug>/` y leemos sus dimensiones reales con sharp.
  */
 
 const CONTENT_DIR = path.join(process.cwd(), "content/projects");
@@ -34,6 +30,14 @@ function hashString(value: string): number {
 function deterministicCoverVh(slug: string): number {
   // 45, 45.5, … 70 (51 valores), siempre el mismo para cada slug.
   return 45 + (hashString(slug) % 51) * 0.5;
+}
+
+/** Tag propio del proyecto: el slug en camelCase (the-mountain-view → theMountainView). */
+function toCamelTag(slug: string): string {
+  const [first, ...rest] = slug.split("-");
+  return (
+    first + rest.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join("")
+  );
 }
 
 const imageSizeSchema = z.enum(["sm", "md", "lg", "full"]);
@@ -57,10 +61,11 @@ const projectFrontmatterSchema = z.object({
   summary: z.string().optional(),
   credit: z.string().optional(),
   featured: z.boolean().default(false),
-  /** Alto manual de la portada en la home (en vh). Si se omite, se calcula de
-   *  forma determinista entre 70 y 75vh a partir del slug. */
+  /** Alto manual de la portada en la home (vh). Si se omite, se calcula entre 45–70vh. */
   homeCoverHeight: z.number().optional(),
   layout: z.array(layoutItemSchema).optional(),
+  /** Categorías por imagen: nombre de archivo → lista de tags. */
+  tags: z.record(z.string(), z.array(z.string())).optional(),
   seo: z
     .object({
       title: z.string().optional(),
@@ -74,6 +79,7 @@ export type ProjectImage = {
   width: number;
   height: number;
   alt: string;
+  tags: string[];
 };
 
 /** Un "bloque" del detalle: una imagen o una pareja, con su talla. */
@@ -87,12 +93,14 @@ export type Project = z.infer<typeof projectFrontmatterSchema> & {
   cover: ProjectImage; // para la home
   coverHeightVh: number; // alto de la portada en la home (vh)
   blocks: Block[]; // secuencia del detalle (con tallas)
+  tag: string; // tag propio del proyecto (camelCase del slug)
 };
 
 async function readImage(
   slug: string,
   file: string,
   alt: string,
+  tags: string[],
 ): Promise<ProjectImage> {
   const meta = await sharp(path.join(PUBLIC_PROJECTS, slug, file)).metadata();
   return {
@@ -100,6 +108,7 @@ async function readImage(
     width: meta.width ?? 0,
     height: meta.height ?? 0,
     alt,
+    tags,
   };
 }
 
@@ -121,6 +130,10 @@ async function loadProject(fileName: string): Promise<Project> {
   }
   const fm = parsed.data;
   const title = fm.title;
+  const projectTag = toCamelTag(slug);
+  const tagsFor = (file: string): string[] => [
+    ...new Set([projectTag, ...(fm.tags?.[file] ?? [])]),
+  ];
 
   const dir = path.join(PUBLIC_PROJECTS, slug);
   const files = fs.existsSync(dir)
@@ -136,7 +149,7 @@ async function loadProject(fileName: string): Promise<Project> {
       `No hay imágenes en public/projects/${slug}/ para el proyecto "${slug}".`,
     );
   }
-  const cover = await readImage(slug, coverFile, title);
+  const cover = await readImage(slug, coverFile, title, tagsFor(coverFile));
 
   let blocks: Block[];
   if (fm.layout && fm.layout.length > 0) {
@@ -146,12 +159,22 @@ async function loadProject(fileName: string): Promise<Project> {
         if ("row" in item) {
           const images = await Promise.all(
             item.row.map((file, j) =>
-              readImage(slug, file, `${title} — ${i + 1}.${j + 1}`),
+              readImage(
+                slug,
+                file,
+                `${title} — ${i + 1}.${j + 1}`,
+                tagsFor(file),
+              ),
             ),
           );
           return { kind: "row", images, size: item.size };
         }
-        const image = await readImage(slug, item.src, `${title} — ${i + 1}`);
+        const image = await readImage(
+          slug,
+          item.src,
+          `${title} — ${i + 1}`,
+          tagsFor(item.src),
+        );
         return { kind: "single", image, size: item.size };
       }),
     );
@@ -160,7 +183,7 @@ async function loadProject(fileName: string): Promise<Project> {
     const galleryFiles = files.filter((file) => file !== coverFile);
     const rest = await Promise.all(
       galleryFiles.map((file, i) =>
-        readImage(slug, file, `${title} — ${i + 1}`),
+        readImage(slug, file, `${title} — ${i + 1}`, tagsFor(file)),
       ),
     );
     blocks = [cover, ...rest].map((image) => ({
@@ -171,7 +194,15 @@ async function loadProject(fileName: string): Promise<Project> {
   }
 
   const coverHeightVh = fm.homeCoverHeight ?? deterministicCoverVh(slug);
-  return { ...fm, slug, body: content.trim(), cover, coverHeightVh, blocks };
+  return {
+    ...fm,
+    slug,
+    tag: projectTag,
+    body: content.trim(),
+    cover,
+    coverHeightVh,
+    blocks,
+  };
 }
 
 async function loadProjects(): Promise<Project[]> {
@@ -203,4 +234,57 @@ export async function getProjectBySlug(
 
 export async function getAllProjectSlugs(): Promise<string[]> {
   return (await all()).map((project) => project.slug);
+}
+
+/** Todas las imágenes únicas de un proyecto (portada + bloques), sin duplicar. */
+function projectImages(project: Project): ProjectImage[] {
+  const list = [
+    project.cover,
+    ...project.blocks.flatMap((b) =>
+      b.kind === "single" ? [b.image] : b.images,
+    ),
+  ];
+  const seen = new Set<string>();
+  return list.filter((img) => {
+    if (seen.has(img.src)) return false;
+    seen.add(img.src);
+    return true;
+  });
+}
+
+export type TaggedImage = ProjectImage & { slug: string; title: string };
+
+/** Lista de todas las categorías existentes (orden alfabético). */
+export async function getAllTags(): Promise<string[]> {
+  const set = new Set<string>();
+  for (const project of await all()) {
+    for (const img of projectImages(project)) {
+      img.tags.forEach((tag) => set.add(tag));
+    }
+  }
+  return [...set].sort((a, b) => a.localeCompare(b));
+}
+
+/** Todas las imágenes (de cualquier proyecto) que comparten una categoría. */
+export async function getImagesByTag(tag: string): Promise<TaggedImage[]> {
+  const out: TaggedImage[] = [];
+  for (const project of await all()) {
+    for (const img of projectImages(project)) {
+      if (img.tags.includes(tag)) {
+        out.push({ ...img, slug: project.slug, title: project.title });
+      }
+    }
+  }
+  return out;
+}
+
+/** Todas las imágenes del archivo (de todos los proyectos), con su slug. */
+export async function getAllImages(): Promise<TaggedImage[]> {
+  const out: TaggedImage[] = [];
+  for (const project of await all()) {
+    for (const img of projectImages(project)) {
+      out.push({ ...img, slug: project.slug, title: project.title });
+    }
+  }
+  return out;
 }
