@@ -156,7 +156,7 @@ export function ProjectChrome({
             </button>
           </div>
 
-          <nav className="mt-12 mb-14 flex flex-wrap gap-x-3 text-[1.2rem] md:mt-12 md:gap-x-5 md:gap-y-2 md:text-[1.6rem]">
+          <nav className="mx-auto mt-14 mb-16 flex max-w-[82vw] flex-wrap justify-center gap-x-3 text-center text-[1.125rem] md:mt-12 md:gap-x-5 md:text-[1.6rem]">
             {tags.map((tag) => (
               <button
                 key={tag}
@@ -171,20 +171,21 @@ export function ProjectChrome({
             ))}
           </nav>
 
-          <div className="columns-2 gap-4 md:columns-4 md:gap-8">
+          <div className="columns-3 gap-4 md:mx-auto md:flex md:max-w-[90vw] md:flex-wrap md:justify-center md:gap-12">
             {filtered.map((img) => (
               <Link
                 key={`${img.slug}-${img.src}`}
                 href={`/work/${img.slug}`}
-                className="mb-4 block break-inside-avoid md:mb-8"
+                onClick={() => setOpen(false)}
+                className="mb-4 block break-inside-avoid md:mb-0"
               >
                 <Image
                   src={img.src}
                   alt={img.alt}
                   width={img.width}
                   height={img.height}
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                  className="h-auto w-full"
+                  sizes="(max-width: 768px) 33vw, 25vw"
+                  className="h-auto w-full md:h-[clamp(280px,32vh,360px)] md:w-auto"
                 />
               </Link>
             ))}

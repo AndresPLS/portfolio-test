@@ -12,13 +12,9 @@ export default function AboutPage() {
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-10 px-4 py-20 md:px-6">
-        <h1 className="font-display text-3xl tracking-tight md:text-4xl">
-          Andrés Polo
-        </h1>
-
+      <main className="flex w-full flex-1 flex-col justify-center gap-10 px-4 py-20 md:px-6">
         {/* TODO: sustituir por tu bio real. */}
-        <div className="space-y-5 text-[1.125rem] leading-[1.5] text-pretty">
+        <div className="max-w-full space-y-5 text-[1.4rem] leading-[1.3] text-pretty sm:max-w-md md:max-w-lg lg:max-w-xl">
           <p>
             Fotógrafo. Trabajo el paisaje, el retrato y la luz como materia.
             (Texto de relleno: cuéntame quién eres y lo edito, o cámbialo tú

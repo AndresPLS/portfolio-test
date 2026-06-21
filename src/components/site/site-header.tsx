@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "./nav-link";
 
 /**
  * Cabecera del sitio: logo (izq.) + About y cambio de idioma (der.).
@@ -8,13 +8,11 @@ import Link from "next/link";
 export function SiteHeader() {
   return (
     <header className="flex items-center justify-between px-4 py-4 text-sm md:px-6">
-      <Link href="/" className="font-display text-base italic">
+      <NavLink href="/" exact className="font-display text-base">
         Andrés Polo
-      </Link>
+      </NavLink>
       <nav className="flex items-center gap-8">
-        <Link href="/about" className="transition-opacity hover:opacity-60">
-          About
-        </Link>
+        <NavLink href="/about">About</NavLink>
         <span className="flex items-center gap-2">
           <span className="font-medium italic">En</span>
           <span className="text-ink/40">Es</span>
