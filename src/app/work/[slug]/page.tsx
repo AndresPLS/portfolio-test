@@ -28,9 +28,34 @@ export async function generateMetadata({
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) return {};
+
+  const title = project.seo?.title ?? project.title;
+  const description = project.seo?.description ?? project.summary;
+  // OG de la ficha: la portada real de la serie (la imagen es lo que mejor
+  // representa el proyecto). `metadataBase` la convierte en URL absoluta.
+  const ogImage = {
+    url: project.cover.src,
+    width: project.cover.width,
+    height: project.cover.height,
+    alt: project.cover.alt,
+  };
+
   return {
-    title: project.seo?.title ?? project.title,
-    description: project.seo?.description ?? project.summary,
+    title,
+    description,
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      url: `/work/${slug}`,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
   };
 }
 

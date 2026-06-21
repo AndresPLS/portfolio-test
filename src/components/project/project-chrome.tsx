@@ -156,7 +156,7 @@ export function ProjectChrome({
             </button>
           </div>
 
-          <nav className="mt-12 mb-8 flex flex-wrap gap-x-4 gap-y-2 text-[1.6rem]">
+          <nav className="mt-12 mb-14 flex flex-wrap gap-x-3 text-[1.2rem] md:mt-12 md:gap-x-5 md:gap-y-2 md:text-[1.6rem]">
             {tags.map((tag) => (
               <button
                 key={tag}
@@ -171,12 +171,12 @@ export function ProjectChrome({
             ))}
           </nav>
 
-          <div className="columns-2 gap-8 md:columns-4">
+          <div className="columns-2 gap-4 md:columns-4 md:gap-8">
             {filtered.map((img) => (
               <Link
                 key={`${img.slug}-${img.src}`}
                 href={`/work/${img.slug}`}
-                className="mb-8 block break-inside-avoid"
+                className="mb-4 block break-inside-avoid md:mb-8"
               >
                 <Image
                   src={img.src}

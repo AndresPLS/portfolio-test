@@ -60,15 +60,29 @@ export function CoverScrubber({ covers }: { covers: Cover[] }) {
     if (draggedRef.current) event.preventDefault();
   };
 
+  // Teclado: las flechas cambian de portada (Enter/Espacio ya activan el enlace
+  // de forma nativa). Sin esto, quien navega con teclado queda atrapado en el
+  // primer proyecto, porque solo hay un <Link> y su destino es el activo.
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      setIndex((i) => clamp(i + 1));
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setIndex((i) => clamp(i - 1));
+    }
+  };
+
   const active = covers[index];
 
   return (
     <Link
       href={`/work/${active.slug}`}
-      aria-label={`Ver proyecto: ${active.title}`}
+      aria-label={`Ver proyecto: ${active.title} (${index + 1} de ${covers.length}). Usa las flechas para cambiar de proyecto.`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onClick={onClick}
+      onKeyDown={onKeyDown}
       className="flex flex-1 touch-none items-center justify-center px-4 md:px-6"
     >
       {covers.map((cover, i) => (

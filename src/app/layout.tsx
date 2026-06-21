@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 
 import { SmoothScrollProvider } from "@/components/motion/smooth-scroll-provider";
+import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
 /**
@@ -25,12 +26,24 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Estudio · Portfolio",
-    template: "%s · Estudio",
+    default: siteConfig.title,
+    template: `%s · ${siteConfig.name}`,
   },
-  description:
-    "Design & architecture portfolio. A learning rebuild with Next.js, React and GSAP.",
+  description: siteConfig.description,
+  openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
+    title: siteConfig.title,
+    description: siteConfig.description,
+    url: siteConfig.url,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+  },
 };
 
 export default function RootLayout({
