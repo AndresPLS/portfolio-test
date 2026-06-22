@@ -7,6 +7,7 @@ import {
   introImageClass,
   rowImageClass,
 } from "@/components/project/image-sizes";
+import { renderLockable } from "@/components/project/lockable-text";
 import { ProjectChrome } from "@/components/project/project-chrome";
 import { ProjectReveal } from "@/components/project/project-reveal";
 import {
@@ -144,7 +145,7 @@ export default async function ProjectPage({
                     key={j}
                     className="text-[1.125rem] leading-[1.2] md:text-[1.2rem]"
                   >
-                    {paragraph}
+                    {renderLockable(paragraph)}
                   </p>
                 ))}
                 {meta ? (

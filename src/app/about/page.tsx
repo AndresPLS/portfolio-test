@@ -44,12 +44,9 @@ export default function AboutPage() {
           </span>
         </div>
 
-        <div>
-          <p>Design and code by me</p>
-        </div>
       </main>
 
-      <SiteFooter />
+      <SiteFooter creditNote="Design and code by me" />
     </div>
   );
 }

@@ -11,6 +11,7 @@
   --color-bone: #f5f5f5; /* fondo hueso principal */
   --color-ink: #111111; /* texto y elementos */
   --color-paper: #ffffff; /* secciones / inversos */
+  --color-accent: #0000aa; /* color de acento (provisional) */
 }
 
 /*

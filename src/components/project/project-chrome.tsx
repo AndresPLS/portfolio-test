@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { ArchiveIcon, CloseIcon } from "@/components/icons";
 import type { TaggedImage } from "@/content/projects";
 
 gsap.registerPlugin(useGSAP);
@@ -13,19 +14,6 @@ gsap.registerPlugin(useGSAP);
 const prefersReduced = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const CloseIcon = () => (
-  <svg
-    viewBox="0 0 20 20"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    aria-hidden="true"
-    className="size-5"
-  >
-    <path d="M4 4l12 12M16 4L4 16" />
-  </svg>
-);
 
 /**
  * "Chrome" de la ficha: cabecera fija (Archive · título · ✕), contador `N/total`,
@@ -182,17 +170,7 @@ export function ProjectChrome({
             aria-label="Abrir archivo"
             className="cursor-pointer transition-opacity hover:opacity-60"
           >
-            <svg
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-              className="size-5"
-            >
-              <circle cx="6.5" cy="6.5" r="1.75" />
-              <circle cx="13.5" cy="6.5" r="1.75" />
-              <circle cx="6.5" cy="13.5" r="1.75" />
-              <circle cx="13.5" cy="13.5" r="1.75" />
-            </svg>
+            <ArchiveIcon />
           </button>
           <h1 className="font-display absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
             {title}

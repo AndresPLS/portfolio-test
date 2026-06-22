@@ -16,8 +16,19 @@ export function SiteHeader() {
           About
         </NavLink>
         <span className="flex items-center gap-2">
-          <span className="font-medium italic">En</span>
-          <span className="text-ink/40">Es</span>
+          <button
+            type="button"
+            aria-current="true"
+            className="italic outline-none focus-visible:underline"
+          >
+            En
+          </button>
+          <button
+            type="button"
+            className="text-ink/40 outline-none transition-opacity hover:opacity-70 focus-visible:underline"
+          >
+            Es
+          </button>
         </span>
       </nav>
     </header>
