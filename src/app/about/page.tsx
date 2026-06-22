@@ -18,12 +18,12 @@ export default function AboutPage() {
           <p>
             I&apos;m Andrés Polo, a photographer and mountain guide based in
             Madrid. The countryside and the natural world have always caught my
-            eye and have shaped me deeply. I currently work on commissions for
-            brands, studios and private clients.
+            eye and have shaped me deeply.
           </p>
           <p>
-            For prints or personal matters andrespolophoto@gmail.com Disponible
-            para colaboraciones, editoriales y proyectos a medida.
+            I work on commissions for brands, studios and private clients, and
+            I&apos;m happy to take on collaborations, editorial work and bespoke
+            projects.
           </p>
         </div>
 
@@ -31,10 +31,10 @@ export default function AboutPage() {
           <span>
             <p>For prints or personal matters:</p>
             <a
-              href="mailto:hola@andrespolo.com"
+              href="mailto:andrespolophoto@gmail.com"
               className="text-ink/80 transition-opacity hover:opacity-60"
             >
-              hola@andrespolo.com
+              andrespolophoto@gmail.com
             </a>
           </span>
 
