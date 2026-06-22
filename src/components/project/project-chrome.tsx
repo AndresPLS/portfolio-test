@@ -1,10 +1,18 @@
 "use client";
 
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { TaggedImage } from "@/content/projects";
+
+gsap.registerPlugin(useGSAP);
+
+const prefersReduced = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const CloseIcon = () => (
   <svg
@@ -42,8 +50,17 @@ export function ProjectChrome({
   images: TaggedImage[];
 }) {
   const [current, setCurrent] = useState(0);
-  const [open, setOpen] = useState(false);
+  // `visible` = overlay montado en el DOM; lo mantenemos durante el cierre para
+  // poder animar el reverse antes de desmontar.
+  const [visible, setVisible] = useState(false);
   const [activeTag, setActiveTag] = useState(projectTag);
+
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  // Evita que el stagger por cambio de tag dispare en la apertura inicial.
+  const skipTagAnim = useRef(true);
 
   useEffect(() => {
     const slides = Array.from(
@@ -75,9 +92,79 @@ export function ProjectChrome({
   }, []);
 
   const openArchive = () => {
+    skipTagAnim.current = true;
     setActiveTag(projectTag);
-    setOpen(true);
+    setVisible(true);
   };
+
+  const closeArchive = () => {
+    const overlay = overlayRef.current;
+    const grid = gridRef.current;
+    if (!overlay || prefersReduced()) {
+      setVisible(false);
+      return;
+    }
+    gsap
+      .timeline({ defaults: { ease: "power2.in" }, onComplete: () => setVisible(false) })
+      .to(grid ? Array.from(grid.children) : [], {
+        autoAlpha: 0,
+        y: 10,
+        duration: 0.22,
+        stagger: 0.012,
+      })
+      .to(overlay, { autoAlpha: 0, scale: 0.99, duration: 0.3 }, "-=0.12");
+  };
+
+  // Secuencia de apertura: el panel entra (fade + leve scale), luego la barra y
+  // los tags, y por último el grid escalonado.
+  useGSAP(
+    () => {
+      if (!visible || prefersReduced()) return;
+      const grid = gridRef.current;
+      gsap
+        .timeline({
+          defaults: { ease: "power3.out" },
+          // Tras abrir, los cambios de tag ya pueden animar el re-stagger.
+          onComplete: () => {
+            skipTagAnim.current = false;
+          },
+        })
+        .from(overlayRef.current, {
+          autoAlpha: 0,
+          scale: 0.985,
+          duration: 0.45,
+          transformOrigin: "50% 50%",
+        })
+        .from(
+          [barRef.current, navRef.current],
+          { autoAlpha: 0, y: -10, duration: 0.4, stagger: 0.08 },
+          "-=0.25",
+        )
+        .from(
+          grid ? Array.from(grid.children) : [],
+          { autoAlpha: 0, y: 26, duration: 0.55, stagger: 0.045 },
+          "-=0.15",
+        );
+    },
+    { dependencies: [visible], scope: overlayRef },
+  );
+
+  // Re-stagger del grid al cambiar de tag (salta mientras dura la apertura).
+  useGSAP(
+    () => {
+      if (!visible || skipTagAnim.current || prefersReduced()) return;
+      const grid = gridRef.current;
+      if (!grid) return;
+      gsap.from(Array.from(grid.children), {
+        autoAlpha: 0,
+        y: 16,
+        duration: 0.45,
+        stagger: 0.03,
+        ease: "power3.out",
+      });
+    },
+    { dependencies: [activeTag], scope: overlayRef },
+  );
 
   const filtered = images.filter((img) => img.tags.includes(activeTag));
 
@@ -134,12 +221,16 @@ export function ProjectChrome({
         ) : null}
       </div>
 
-      {open ? (
+      {visible ? (
         <div
+          ref={overlayRef}
           data-lenis-prevent
           className="bg-bone fixed inset-0 z-40 overflow-y-auto px-4 pt-4 pb-20 md:px-6"
         >
-          <div className="relative flex items-center justify-between text-sm">
+          <div
+            ref={barRef}
+            className="relative flex items-center justify-between text-sm"
+          >
             <Link href="/about" className="transition-opacity hover:opacity-60">
               About
             </Link>
@@ -148,7 +239,7 @@ export function ProjectChrome({
             </span>
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={closeArchive}
               aria-label="Cerrar archivo"
               className="transition-opacity hover:opacity-60"
             >
@@ -156,7 +247,10 @@ export function ProjectChrome({
             </button>
           </div>
 
-          <nav className="mx-auto mt-14 mb-16 flex max-w-[82vw] flex-wrap justify-center gap-x-3 text-center text-[1.125rem] md:mt-12 md:gap-x-5 md:text-[1.6rem]">
+          <nav
+            ref={navRef}
+            className="mx-auto mt-14 mb-16 flex max-w-[82vw] flex-wrap justify-center gap-x-3 text-center text-[1.125rem] md:mt-12 md:gap-x-5 md:text-[1.6rem]"
+          >
             {tags.map((tag) => (
               <button
                 key={tag}
@@ -171,12 +265,15 @@ export function ProjectChrome({
             ))}
           </nav>
 
-          <div className="columns-3 gap-4 md:mx-auto md:flex md:max-w-[90vw] md:flex-wrap md:justify-center md:gap-12">
+          <div
+            ref={gridRef}
+            className="columns-3 gap-4 md:mx-auto md:flex md:max-w-[90vw] md:flex-wrap md:justify-center md:gap-12"
+          >
             {filtered.map((img) => (
               <Link
                 key={`${img.slug}-${img.src}`}
                 href={`/work/${img.slug}`}
-                onClick={() => setOpen(false)}
+                onClick={closeArchive}
                 className="mb-4 block break-inside-avoid md:mb-0"
               >
                 <Image

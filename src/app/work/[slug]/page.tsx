@@ -8,6 +8,7 @@ import {
   rowImageClass,
 } from "@/components/project/image-sizes";
 import { ProjectChrome } from "@/components/project/project-chrome";
+import { ProjectReveal } from "@/components/project/project-reveal";
 import {
   getAllImages,
   getAllProjects,
@@ -81,6 +82,7 @@ export default async function ProjectPage({
 
   return (
     <article className="h-dvh">
+      <ProjectReveal />
       <ProjectChrome
         title={project.title}
         blockCount={blocks.length}

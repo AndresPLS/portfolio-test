@@ -12,31 +12,40 @@ export default function AboutPage() {
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
 
-      <main className="flex w-full flex-1 flex-col justify-center gap-10 px-4 py-20 md:px-6">
+      <main className="flex w-full flex-1 flex-col justify-center gap-14 px-4 py-20 md:px-6">
         {/* TODO: sustituir por tu bio real. */}
-        <div className="max-w-full space-y-5 text-[1.4rem] leading-[1.3] text-pretty sm:max-w-md md:max-w-lg lg:max-w-xl">
+        <div className="max-w-full space-y-5 text-[1.2rem] leading-[1.3] text-pretty sm:max-w-md md:max-w-lg md:text-[1.3rem] lg:max-w-2xl">
           <p>
-            Fotógrafo. Trabajo el paisaje, el retrato y la luz como materia.
-            (Texto de relleno: cuéntame quién eres y lo edito, o cámbialo tú
-            aquí mismo.)
+            I&apos;m Andrés Polo, a photographer and mountain guide based in
+            Madrid. The countryside and the natural world have always caught my
+            eye and have shaped me deeply. I currently work on commissions for
+            brands, studios and private clients.
           </p>
           <p>
-            Selección de series personales y encargos. Disponible para
-            colaboraciones, editoriales y proyectos a medida.
+            For prints or personal matters andrespolophoto@gmail.com Disponible
+            para colaboraciones, editoriales y proyectos a medida.
           </p>
         </div>
 
-        <div className="text-ink/60 space-y-1 text-sm">
-          <p>
-            Contacto:{" "}
+        <div className="text-ink/60 flex flex-col gap-2 space-y-1 text-sm">
+          <span>
+            <p>For prints or personal matters:</p>
             <a
               href="mailto:hola@andrespolo.com"
               className="text-ink/80 transition-opacity hover:opacity-60"
             >
               hola@andrespolo.com
             </a>
-          </p>
-          <p>Instagram · Behance</p>
+          </span>
+
+          <span>
+            <p>Follow me on</p>
+            <p>Instagram · Behance</p>
+          </span>
+        </div>
+
+        <div>
+          <p>Design and code by me</p>
         </div>
       </main>
 

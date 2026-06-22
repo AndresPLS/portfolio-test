@@ -18,18 +18,24 @@ const DUR = 0.4;
 export function NavLink({
   href,
   exact = false,
+  toggleTo,
   className = "",
   children,
 }: {
   href: string;
   /** Activo solo si la ruta coincide exacta (útil para "/"). */
   exact?: boolean;
+  /** Si ya estás en la página activa, el clic lleva aquí (toggle). */
+  toggleTo?: string;
   className?: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const active = exact ? pathname === href : pathname.startsWith(href);
   const ref = useRef<HTMLAnchorElement>(null);
+
+  // Destino real: si ya estamos en la página, el clic la "cierra" (toggle).
+  const destination = active && toggleTo ? toggleTo : href;
 
   // El estado activo queda inclinado de forma fija (sin tween).
   useEffect(() => {
@@ -44,7 +50,7 @@ export function NavLink({
   return (
     <Link
       ref={ref}
-      href={href}
+      href={destination}
       onMouseEnter={() => to(SKEW)}
       onMouseLeave={() => to(0)}
       className={`inline-block origin-left ${className}`}

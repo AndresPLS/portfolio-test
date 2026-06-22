@@ -12,7 +12,9 @@ export function SiteHeader() {
         Andrés Polo
       </NavLink>
       <nav className="flex items-center gap-8">
-        <NavLink href="/about">About</NavLink>
+        <NavLink href="/about" toggleTo="/">
+          About
+        </NavLink>
         <span className="flex items-center gap-2">
           <span className="font-medium italic">En</span>
           <span className="text-ink/40">Es</span>

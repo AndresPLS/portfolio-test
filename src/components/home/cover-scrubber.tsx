@@ -1,5 +1,6 @@
 "use client";
 
+import gsap from "gsap";
 import Image from "next/image";
 import Link from "next/link";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
@@ -26,6 +27,8 @@ export function CoverScrubber({ covers }: { covers: Cover[] }) {
   const [index, setIndex] = useState(0);
   const startYRef = useRef(0);
   const draggedRef = useRef(false);
+  // Etiqueta "Open" que sigue al cursor (solo escritorio).
+  const labelRef = useRef<HTMLDivElement>(null);
 
   const clamp = (n: number) => Math.min(covers.length - 1, Math.max(0, n));
 
@@ -34,14 +37,38 @@ export function CoverScrubber({ covers }: { covers: Cover[] }) {
   const pickByY = (clientY: number) =>
     setIndex(clamp(Math.floor((clientY / window.innerHeight) * covers.length)));
 
-  // Escritorio: la posición horizontal del cursor mapea al índice.
+  // Escritorio: la posición horizontal del cursor mapea al índice, y de paso
+  // arrastramos la etiqueta "Open" con un leve trailing (quickTo) muy editorial.
   useEffect(() => {
     if (!window.matchMedia("(pointer: fine)").matches) return;
-    const onMove = (event: PointerEvent) => pickByX(event.clientX);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const label = labelRef.current;
+    const xTo = label
+      ? gsap.quickTo(label, "x", { duration: reduce ? 0 : 0.4, ease: "power3" })
+      : null;
+    const yTo = label
+      ? gsap.quickTo(label, "y", { duration: reduce ? 0 : 0.4, ease: "power3" })
+      : null;
+    const onMove = (event: PointerEvent) => {
+      pickByX(event.clientX);
+      xTo?.(event.clientX);
+      yTo?.(event.clientY);
+    };
     window.addEventListener("pointermove", onMove);
     return () => window.removeEventListener("pointermove", onMove);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [covers.length]);
+
+  // Mostrar/ocultar la etiqueta al entrar/salir del hero (solo ratón).
+  const showLabel = (event: React.PointerEvent) => {
+    if (event.pointerType !== "mouse" || !labelRef.current) return;
+    gsap.set(labelRef.current, { x: event.clientX, y: event.clientY });
+    gsap.to(labelRef.current, { autoAlpha: 1, duration: 0.25, ease: "power2.out" });
+  };
+  const hideLabel = (event: React.PointerEvent) => {
+    if (event.pointerType !== "mouse" || !labelRef.current) return;
+    gsap.to(labelRef.current, { autoAlpha: 0, duration: 0.2, ease: "power2.out" });
+  };
 
   // Táctil: arrastre vertical → índice (el dedo solo emite pointermove al arrastrar).
   const onPointerDown = (event: React.PointerEvent) => {
@@ -81,10 +108,21 @@ export function CoverScrubber({ covers }: { covers: Cover[] }) {
       aria-label={`Ver proyecto: ${active.title} (${index + 1} de ${covers.length}). Usa las flechas para cambiar de proyecto.`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
+      onPointerEnter={showLabel}
+      onPointerLeave={hideLabel}
       onClick={onClick}
       onKeyDown={onKeyDown}
       className="flex flex-1 touch-none items-center justify-center px-4 md:px-6"
     >
+      <div
+        ref={labelRef}
+        aria-hidden="true"
+        className="pointer-events-none invisible fixed top-0 left-0 z-50 opacity-0"
+      >
+        <span className="font-sans block -translate-y-1/2 pl-5 text-lg">
+          Open
+        </span>
+      </div>
       {covers.map((cover, i) => (
         <Image
           key={cover.slug}
